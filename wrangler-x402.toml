@@ -1,0 +1,24 @@
+name = "hedera-x402-middleware"
+main = "dist/x402-worker.js"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+ENVIRONMENT = "production"
+
+# Secrets (set via: wrangler secret put SECRET_NAME)
+# OPERATOR_ID
+# OPERATOR_KEY
+# TREASURY_ID
+# TREASURY_KEY
+# X402_FACILITATOR_URL
+# X402_PAY_TO_ADDRESS
+# X402_PRICE_BASIC
+# X402_PRICE_STANDARD
+# X402_PRICE_PREMIUM
+# X402_DEFAULT_ASSET
+# X402_MAX_TIMEOUT_SECONDS
+# MIRROR_NODE
+
+# Deploy to workers.dev subdomain
+host = "mobicobe.workers.dev"

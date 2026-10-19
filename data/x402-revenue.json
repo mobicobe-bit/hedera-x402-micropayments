@@ -1,0 +1,11 @@
+[
+  {
+    "endpoint": "/api/v1/token/balances",
+    "payer": "0.0.123456",
+    "amount": "1000",
+    "currency": "USDC",
+    "network": "hedera:testnet",
+    "txHash": "0.0.123456@1234567890.123456789",
+    "timestamp": "2026-10-11T19:37:46.894Z"
+  }
+]

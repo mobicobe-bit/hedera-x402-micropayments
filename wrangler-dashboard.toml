@@ -1,0 +1,14 @@
+name = "hedera-revenue-dashboard"
+main = "dist/dashboard-worker.js"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+ENVIRONMENT = "production"
+
+# Deploy to workers.dev subdomain
+host = "mobicobe.workers.dev"
+
+[[kv_namespaces]]
+binding = "DASHBOARD_KV"
+id = "63ab8cf87a674f26abab17e73d627fd6"

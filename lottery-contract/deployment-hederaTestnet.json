@@ -1,0 +1,9 @@
+{
+  "network": "hederaTestnet",
+  "contractAddress": "0x0e1421ADC7089E9e537c86a4fa8bB07498164DfB",
+  "deployer": "0xCc7Cc2c2c11e82F175cAc1249038eB338bA099Bd",
+  "protocolFeeBps": 250,
+  "protocolFeeReceiver": "0xCc7Cc2c2c11e82F175cAc1249038eB338bA099Bd",
+  "deployedAt": "2026-10-17T03:57:00.969Z",
+  "transactionHash": "0xca09a4805c4c9d184b5a597efab7646e23d18baa6c5451ced0659377b1e0451c"
+}

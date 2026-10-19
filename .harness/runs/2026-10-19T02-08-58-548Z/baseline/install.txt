@@ -1,0 +1,9 @@
+npm ERR! code ENOTEMPTY
+npm ERR! syscall rename
+npm ERR! path /mnt/c/Users/c/hedera-micropayments-starter/node_modules/hono
+npm ERR! dest /mnt/c/Users/c/hedera-micropayments-starter/node_modules/.hono-JNE6qcxc
+npm ERR! errno -39
+npm ERR! ENOTEMPTY: directory not empty, rename '/mnt/c/Users/c/hedera-micropayments-starter/node_modules/hono' -> '/mnt/c/Users/c/hedera-micropayments-starter/node_modules/.hono-JNE6qcxc'
+
+npm ERR! A complete log of this run can be found in:
+npm ERR!     /home/c/.npm/_logs/2026-10-19T02_08_59_549Z-debug-0.log

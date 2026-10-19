@@ -1,0 +1,55 @@
+{
+  "name": "crypto-micropayments-starter",
+  "version": "1.0.0",
+  "description": "Crypto micropayments starter for API monetization using x402 protocol and MicroLottery smart contracts",
+  "main": "dist/demo.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "build:worker": "echo 'Using pre-built dist/worker.js'",
+    "demo": "npm run build && node dist/demo.js",
+    "demo:purchase": "npm run build && node dist/demo-purchase.js",
+    "dev": "ts-node --esm src/demo.ts",
+    "dev:purchase": "ts-node --esm src/demo-purchase.ts",
+    "dev:server": "ts-node --esm src/server.ts",
+    "dev:dashboard": "ts-node --esm src/dashboard.ts",
+    "start": "npm run build && node dist/server.js",
+    "start:dashboard": "npm run build && node dist/dashboard.js",
+    "deploy": "npm run build && wrangler deploy",
+    "deploy:dry-run": "npm run build && wrangler deploy --dry-run",
+    "cf:logs": "wrangler tail"
+  },
+  "keywords": [
+    "x402",
+    "micropayments",
+    "web3",
+    "monetization",
+    "lottery",
+    "smart-contract"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@hashgraph/hedera-wallet-connect": "^1.0.0",
+    "@hashgraph/sdk": "^2.81.0",
+    "@hono/node-server": "^2.1.4",
+    "@x402/core": "^2.28.0",
+    "@x402/express": "^2.28.0",
+    "@x402/fetch": "^2.28.0",
+    "@x402/hedera": "^2.28.0",
+    "@x402/hono": "^2.28.0",
+    "dotenv": "^18.0.6",
+    "ethers": "^6.13.0",
+    "hono": "^4.6.0",
+    "protobufjs": "^7.2.6",
+    "rate-limiter-flexible": "^11.2.1",
+    "viem": "^2.57.4"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240903.0",
+    "@types/node": "^26.6.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^7.0.2",
+    "wrangler": "^3.78.0"
+  }
+}

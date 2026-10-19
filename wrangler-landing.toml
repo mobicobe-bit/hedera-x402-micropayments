@@ -1,0 +1,15 @@
+name = "hedera-x402-landing"
+main = "dist/landing.js"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+ENVIRONMENT = "production"
+
+# Deploy to workers.dev subdomain
+host = "mobicobe.workers.dev"
+
+# Custom domain (optional)
+# routes = [
+#   { pattern = "api.yourdomain.com/*", zone_name = "yourdomain.com" }
+# ]

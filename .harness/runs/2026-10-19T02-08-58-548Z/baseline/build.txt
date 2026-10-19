@@ -1,0 +1,5 @@
+
+> crypto-micropayments-starter@1.0.0 build
+> tsc
+
+sh: 1: tsc: not found

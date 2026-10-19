@@ -1,0 +1,115 @@
+{
+  "service": {
+    "name": "Hedera Micropayments API",
+    "version": "1.0.0",
+    "description": "Pay-per-request Hedera data APIs via x402 on mainnet. Real mirror node queries for token balances, analytics, and compliance screening. Built on Hedera Token Service with protocol-layer custom fees.",
+    "url": "https://hedera-micropayments-api.mobicobe.workers.dev",
+    "protocol": "x402",
+    "payment": {
+      "currency": "USDC",
+      "networks": [
+        {
+          "name": "hedera",
+          "network": "hedera:mainnet",
+          "recipient": "0.0.4606490",
+          "token": "0.0.456858"
+        }
+      ]
+    },
+    "endpoints": [
+      {
+        "path": "/api/v1/token/balances",
+        "method": "GET",
+        "price": 1000,
+        "description": "Query token balances for an account via mirror node",
+        "input": {
+          "content_type": "application/json",
+          "schema": {
+            "accountId": "string (required) - Hedera account ID (e.g., 0.0.123456)"
+          }
+        },
+        "output": {
+          "content_type": "application/json",
+          "schema": {
+            "accountId": "string",
+            "tokens": "array[object]",
+            "hbarBalance": "string"
+          }
+        }
+      },
+      {
+        "path": "/api/v1/token/analytics/:tokenId",
+        "method": "GET",
+        "price": 5000,
+        "description": "Token analytics: holder distribution, velocity, top holders",
+        "input": {
+          "content_type": "application/json",
+          "schema": {
+            "tokenId": "string (path param) - Hedera token ID (e.g., 0.0.789012)"
+          }
+        },
+        "output": {
+          "content_type": "application/json",
+          "schema": {
+            "tokenId": "string",
+            "analytics": {
+              "totalHolders": "number",
+              "totalSupply": "string",
+              "circulatingSupply": "string",
+              "velocity24h": "string",
+              "topHolders": "array[object]",
+              "transfers24h": "number",
+              "uniqueSenders24h": "number",
+              "uniqueReceivers24h": "number"
+            }
+          }
+        }
+      },
+      {
+        "path": "/api/v1/compliance/screen/:accountId",
+        "method": "GET",
+        "price": 20000,
+        "description": "Compliance screening: KYC/AML flags, sanctions check via HCS",
+        "input": {
+          "content_type": "application/json",
+          "schema": {
+            "accountId": "string (path param) - Hedera account ID (e.g., 0.0.123456)"
+          }
+        },
+        "output": {
+          "content_type": "application/json",
+          "schema": {
+            "accountId": "string",
+            "screening": {
+              "kycStatus": "string",
+              "amlFlags": "array[string]",
+              "sanctionsMatch": "boolean",
+              "riskScore": "number",
+              "accountAgeDays": "number",
+              "isDeleted": "boolean",
+              "isFrozen": "boolean"
+            }
+          }
+        }
+      }
+    ],
+    "category": "blockchain-data",
+    "tags": [
+      "hedera",
+      "hts",
+      "mirror-node",
+      "token-analytics",
+      "compliance",
+      "micropayments"
+    ],
+    "contact": {
+      "email": "your-email@example.com",
+      "website": "https://github.com/your-repo/hedera-micropayments-starter"
+    },
+    "sla": {
+      "uptime": "99.5%",
+      "avg_response_time": "500ms",
+      "rate_limit": "100 requests/day per wallet"
+    }
+  }
+}

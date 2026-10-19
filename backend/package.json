@@ -1,0 +1,28 @@
+{
+  "name": "hedera-micropayments-backend",
+  "version": "1.0.0",
+  "description": "Backend for Hedera micropayments - receives signed transactions, mints tokens",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "npm run build && node dist/index.js",
+    "dev": "ts-node --esm src/index.ts"
+  },
+  "keywords": ["hedera", "hts", "micropayments", "backend"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@hashgraph/sdk": "^2.81.0",
+    "cors": "^2.8.5",
+    "dotenv": "^18.0.6",
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^26.6.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^7.0.2"
+  }
+}

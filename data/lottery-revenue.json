@@ -1,0 +1,12 @@
+[
+  {
+    "roundId": 1,
+    "ticketPriceTinybars": 100000000,
+    "ticketsSold": 5,
+    "protocolFeeBps": 250,
+    "protocolFeeTinybars": 12500000,
+    "protocolFeeReceiver": "0.0.1073622",
+    "txHash": "0.0.1073622@1234567890.123456789",
+    "timestamp": "2026-10-11T19:38:07.233Z"
+  }
+]

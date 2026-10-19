@@ -1,0 +1,8 @@
+install: npm install --legacy-peer-deps || true
+build: npx tsc
+test: null
+serve: timeout 5 node dist/dashboard.js
+
+HEDERA_NETWORK: testnet
+HEDERA_MIRROR_NODE: https://testnet.mirrornode.hedera.com
+HEDERA_OPERATOR_ID: 0.0.1187135

@@ -1,0 +1,30 @@
+{
+  "name": "lottery-contract",
+  "version": "1.0.0",
+  "description": "MicroLottery smart contract for Hedera EVM",
+  "main": "index.js",
+  "scripts": {
+    "compile": "hardhat compile",
+    "deploy:testnet": "hardhat run scripts/deploy.js --network hederaTestnet",
+    "deploy:mainnet": "hardhat run scripts/deploy.js --network hederaMainnet",
+    "create-round:testnet": "hardhat run scripts/create-round.js --network hederaTestnet",
+    "create-round:mainnet": "hardhat run scripts/create-round.js --network hederaMainnet",
+    "draw-winner:testnet": "hardhat run scripts/draw-winner.js --network hederaTestnet",
+    "draw-winner:mainnet": "hardhat run scripts/draw-winner.js --network hederaMainnet",
+    "verify:testnet": "hardhat verify --network hederaTestnet",
+    "verify:mainnet": "hardhat verify --network hederaMainnet",
+    "clean": "hardhat clean"
+  },
+  "keywords": ["hedera", "evm", "lottery", "smart-contract"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@nomicfoundation/hardhat-verify": "^2.0.0",
+    "dotenv": "^18.0.7",
+    "hardhat": "^2.22.0"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.2.0"
+  }
+}

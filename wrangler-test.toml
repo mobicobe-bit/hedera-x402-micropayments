@@ -1,0 +1,10 @@
+name = "hedera-micropayments-api-test"
+main = "dist/simple-worker.js"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+ENVIRONMENT = "production"
+
+# Deploy to workers.dev subdomain
+host = "mobicobe.workers.dev"

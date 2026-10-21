@@ -211,10 +211,23 @@ app.post("/api/dashboard/webhook/lottery-fee", async (c) => {
   return c.json({ success: true });
 });
 
-// HTML Dashboard UI
-app.get("/dashboard", async (c) => {
-  const metrics = await computeMetrics(c.env);
-  return c.html(`<!DOCTYPE html>
+// HTML Dashboard UI - uses template function to avoid TypeScript escaping ${} in template literals
+function renderDashboard(metrics: CombinedMetrics): string {
+  const m = metrics;
+  const x402Calls = m.x402.totalCalls;
+  const x402Payers = m.x402.uniquePayers;
+  const x402RevenueUSDC = m.x402.totalRevenueUSDC.toFixed(4);
+  const x402RevenueUSD = m.combined.x402RevenueUSD.toFixed(2);
+  const lotteryFeeHBAR = m.lottery.totalProtocolFeeHBAR.toFixed(4);
+  const lotteryRevenueUSD = m.combined.lotteryRevenueUSD.toFixed(2);
+  const totalRevenueUSD = m.combined.totalRevenueUSD.toFixed(2);
+  const lotteryRounds = m.lottery.totalRounds;
+  const lotteryTickets = m.lottery.totalTicketsSold;
+
+  // Client-side JS metrics as JSON (injected separately)
+  const metricsJson = JSON.stringify(m);
+
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -246,18 +259,18 @@ app.get("/dashboard", async (c) => {
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
       <div class="metric-card">
         <div class="stat-label">Total Combined Revenue</div>
-        <div class="stat-value revenue-positive mt-2">$${metrics.combined.totalRevenueUSD.toFixed(2)}</div>
-        <div class="text-sm text-gray-500 mt-2">≈ \$${metrics.combined.x402RevenueUSD.toFixed(2)} (x402) + \$${metrics.combined.lotteryRevenueUSD.toFixed(2)} (Lottery)</div>
+        <div class="stat-value revenue-positive mt-2">$${totalRevenueUSD}</div>
+        <div class="text-sm text-gray-500 mt-2">≈ $${x402RevenueUSD} (x402) + $${lotteryRevenueUSD} (Lottery)</div>
       </div>
       <div class="metric-card">
         <div class="stat-label">x402 API Revenue</div>
-        <div class="stat-value revenue-positive mt-2">$${metrics.x402.totalRevenueUSDC.toFixed(4)} USDC</div>
-        <div class="text-sm text-gray-500 mt-2">\${metrics.x402.totalCalls} calls \u2022 \${metrics.x402.uniquePayers} unique payers</div>
+        <div class="stat-value revenue-positive mt-2">$${x402RevenueUSDC} USDC</div>
+        <div class="text-sm text-gray-500 mt-2" id="x402CallsStat">${x402Calls} calls • ${x402Payers} unique payers</div>
       </div>
       <div class="metric-card">
         <div class="stat-label">Lottery Protocol Fees</div>
-        <div class="stat-value revenue-positive mt-2">\${metrics.lottery.totalProtocolFeeHBAR.toFixed(4)} HBAR</div>
-        <div class="text-sm text-gray-500 mt-2">\${metrics.lottery.totalRounds} rounds \u2022 \${metrics.lottery.totalTicketsSold} tickets</div>
+        <div class="stat-value revenue-positive mt-2">${lotteryFeeHBAR} HBAR</div>
+        <div class="text-sm text-gray-500 mt-2" id="lotteryRoundsStat">${lotteryRounds} rounds • ${lotteryTickets} tickets</div>
       </div>
     </div>
 
@@ -313,10 +326,10 @@ app.get("/dashboard", async (c) => {
   </div>
 
   <script>
-    const metrics = ${JSON.stringify(await computeMetrics(c.env))};
+    const metrics = ${metricsJson};
     const fmtDate = (iso) => new Date(iso).toLocaleString();
     const shortHash = (h) => h.slice(0,12) + '...' + h.slice(-8);
-    const linkHash = (h, network = 'testnet') => \`<a href="https://hashscan.io/\${network}/tx/\${h}" target="_blank" class="text-blue-400 hover:underline">\${shortHash(h)}</a>\`;
+    const linkHash = (h, network = 'testnet') => '<a href="https://hashscan.io/' + network + '/tx/' + h + '" target="_blank" class="text-blue-400 hover:underline">' + shortHash(h) + '</a>';
 
     // Tab switching
     document.querySelectorAll('[data-tab]').forEach(btn => {
@@ -329,7 +342,7 @@ app.get("/dashboard", async (c) => {
     });
 
     // Charts
-    new Chart(document.getElementById('combinedChart'), { type: 'bar', data: { labels: Object.keys({...metrics.x402.revenueByDay, ...metrics.lottery.revenueByDay}).sort(), datasets: [{ label: 'x402 (USDC)', data: Object.keys({...metrics.x402.revenueByDay, ...metrics.lottery.revenueByDay}).sort().map(d => metrics.x402.revenueByDay[d] || 0), backgroundColor: 'rgba(59,130,246,0.7)' }, { label: 'Lottery (HBAR \u00d7 $0.05)', data: Object.keys({...metrics.x402.revenueByDay, ...metrics.lottery.revenueByDay}).sort().map(d => (metrics.lottery.revenueByDay[d] || 0) * 0.05), backgroundColor: 'rgba(139,92,246,0.7)' }] }, options: { responsive: true, plugins: { legend: { labels: { color: '#9ca3af' } } }, scales: { x: { ticks: { color: '#6b7280' }, grid: { color: '#374151' } }, y: { ticks: { color: '#6b7280' }, grid: { color: '#374151' } } } } });
+    new Chart(document.getElementById('combinedChart'), { type: 'bar', data: { labels: Object.keys({...metrics.x402.revenueByDay, ...metrics.lottery.revenueByDay}).sort(), datasets: [{ label: 'x402 (USDC)', data: Object.keys({...metrics.x402.revenueByDay, ...metrics.lottery.revenueByDay}).sort().map(d => metrics.x402.revenueByDay[d] || 0), backgroundColor: 'rgba(59,130,246,0.7)' }, { label: 'Lottery (HBAR x $0.05)', data: Object.keys({...metrics.x402.revenueByDay, ...metrics.lottery.revenueByDay}).sort().map(d => (metrics.lottery.revenueByDay[d] || 0) * 0.05), backgroundColor: 'rgba(139,92,246,0.7)' }] }, options: { responsive: true, plugins: { legend: { labels: { color: '#9ca3af' } } }, scales: { x: { ticks: { color: '#6b7280' }, grid: { color: '#374151' } }, y: { ticks: { color: '#6b7280' }, grid: { color: '#374151' } } } } });
     new Chart(document.getElementById('splitChart'), { type: 'doughnut', data: { labels: ['x402 API', 'MicroLottery'], datasets: [{ data: [metrics.combined.x402RevenueUSD, metrics.combined.lotteryRevenueUSD], backgroundColor: ['#3b82f6', '#8b5cf6'], borderWidth: 0 }] }, options: { responsive: true, plugins: { legend: { labels: { color: '#9ca3af' } } } } });
     new Chart(document.getElementById('endpointChart'), { type: 'bar', data: { labels: Object.keys(metrics.x402.revenueByEndpoint), datasets: [{ label: 'Revenue (USDC)', data: Object.values(metrics.x402.revenueByEndpoint).map(v => v.revenue), backgroundColor: 'rgba(59,130,246,0.7)' }] }, options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#6b7280' }, grid: { color: '#374151' } }, y: { ticks: { color: '#6b7280' }, grid: { color: '#374151' } } } } });
     new Chart(document.getElementById('x402DayChart'), { type: 'line', data: { labels: Object.keys(metrics.x402.revenueByDay).sort(), datasets: [{ label: 'Daily Revenue (USDC)', data: Object.keys(metrics.x402.revenueByDay).sort().map(d => metrics.x402.revenueByDay[d]), borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.1)', fill: true, tension: 0.3 }] }, options: { responsive: true, plugins: { legend: { labels: { color: '#9ca3af' } } }, scales: { x: { ticks: { color: '#6b7280' }, grid: { color: '#374151' } }, y: { ticks: { color: '#6b7280' }, grid: { color: '#374151' } } } } });
@@ -344,23 +357,29 @@ app.get("/dashboard", async (c) => {
       ]);
 
       const x402Body = document.getElementById('x402TableBody');
-      x402Res.records.forEach(r => { x402Body.innerHTML += \`<tr class="border-b border-gray-800 hover:bg-gray-800"><td class="py-2">\${fmtDate(r.timestamp)}</td><td class="py-2 font-mono text-xs">\${r.endpoint}</td><td class="py-2 font-mono text-xs">\${r.payer.slice(0,10)}...</td><td class="py-2 text-green-400">\${(parseInt(r.amount)/1_000_000).toFixed(6)}</td><td class="py-2">\${linkHash(r.txHash, r.network.split(':')[1])}</td></tr>\`; });
+      x402Res.records.forEach(r => { x402Body.innerHTML += '<tr class="border-b border-gray-800 hover:bg-gray-800"><td class="py-2">' + fmtDate(r.timestamp) + '</td><td class="py-2 font-mono text-xs">' + r.endpoint + '</td><td class="py-2 font-mono text-xs">' + r.payer.slice(0,10) + '...</td><td class="py-2 text-green-400">' + (parseInt(r.amount)/1000000).toFixed(6) + '</td><td class="py-2">' + linkHash(r.txHash, r.network.split(':')[1]) + '</td></tr>'; });
 
       const lotteryBody = document.getElementById('lotteryTableBody');
-      lotteryRes.records.forEach(r => { lotteryBody.innerHTML += \`<tr class="border-b border-gray-800 hover:bg-gray-800"><td class="py-2">\${fmtDate(r.timestamp)}</td><td class="py-2">#\${r.roundId}</td><td class="py-2">\${r.ticketsSold}</td><td class="py-2 text-green-400">\${(r.protocolFeeTinybars/100_000_000).toFixed(8)}</td><td class="py-2">\${linkHash(r.txHash)}</td></tr>\`; });
+      lotteryRes.records.forEach(r => { lotteryBody.innerHTML += '<tr class="border-b border-gray-800 hover:bg-gray-800"><td class="py-2">' + fmtDate(r.timestamp) + '</td><td class="py-2">#' + r.roundId + '</td><td class="py-2">' + r.ticketsSold + '</td><td class="py-2 text-green-400">' + (r.protocolFeeTinybars/100000000).toFixed(8) + '</td><td class="py-2">' + linkHash(r.txHash) + '</td></tr>'; });
 
       const allEvents = [
-        ...x402Res.records.map(r => ({ ...r, source: 'x402', revenue: parseInt(r.amount)/1_000_000, unit: 'USDC', detail: r.endpoint })),
-        ...lotteryRes.records.map(r => ({ ...r, source: 'lottery', revenue: r.protocolFeeTinybars/100_000_000, unit: 'HBAR', detail: 'Round #' + r.roundId + ' \u2022 ' + r.ticketsSold + ' tickets' }))
+        ...x402Res.records.map(r => ({ ...r, source: 'x402', revenue: parseInt(r.amount)/1000000, unit: 'USDC', detail: r.endpoint })),
+        ...lotteryRes.records.map(r => ({ ...r, source: 'lottery', revenue: r.protocolFeeTinybars/100000000, unit: 'HBAR', detail: 'Round #' + r.roundId + ' • ' + r.ticketsSold + ' tickets' }))
       ].sort((a,b) => b.timestamp.localeCompare(a.timestamp)).slice(0, 30);
 
       const recentBody = document.getElementById('recentTableBody');
-      allEvents.forEach(r => { recentBody.innerHTML += \`<tr class="border-b border-gray-800 hover:bg-gray-800"><td class="py-2">\${fmtDate(r.timestamp)}</td><td class="py-2">\${r.source === 'x402' ? '<span class="px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded text-xs">x402</span>' : '<span class="px-2 py-0.5 bg-purple-500/20 text-purple-400 rounded text-xs">Lottery</span>'}</td><td class="py-2 text-sm">\${r.detail}</td><td class="py-2 text-green-400">\${r.revenue.toFixed(r.unit === 'USDC' ? 6 : 8)} \${r.unit}</td><td class="py-2">\${linkHash(r.txHash)}</td></tr>\`; });
+      allEvents.forEach(r => { recentBody.innerHTML += '<tr class="border-b border-gray-800 hover:bg-gray-800"><td class="py-2">' + fmtDate(r.timestamp) + '</td><td class="py-2">' + (r.source === 'x402' ? '<span class="px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded text-xs">x402</span>' : '<span class="px-2 py-0.5 bg-purple-500/20 text-purple-400 rounded text-xs">Lottery</span>') + '</td><td class="py-2 text-sm">' + r.detail + '</td><td class="py-2 text-green-400">' + r.revenue.toFixed(r.unit === 'USDC' ? 6 : 8) + ' ' + r.unit + '</td><td class="py-2">' + linkHash(r.txHash) + '</td></tr>'; });
     }
     loadTables();
   </script>
 </body>
-</html>`);
+</html>`;
+}
+
+// HTML Dashboard UI
+app.get("/dashboard", async (c) => {
+  const metrics = await computeMetrics(c.env);
+  return c.html(renderDashboard(metrics));
 });
 
 export default { fetch: (request: Request, env: any, ctx: any) => app.fetch(request, env, ctx) };

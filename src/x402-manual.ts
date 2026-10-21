@@ -97,6 +97,23 @@ async function x402Verify(c: Context, next: () => Promise<void>) {
         // Payment valid, add payer info to context
         (c as any).x402Payer = verifyData.payer;
         (c as any).x402TxHash = verifyData.transactionHash;
+
+        // Record payment to dashboard webhook (fire-and-forget)
+        const dashboardUrl = c.env.DASHBOARD_WEBHOOK_URL || "https://hedera-revenue-dashboard.mobicobe.workers.dev";
+        const endpointPath = c.req.path;
+        fetch(`${dashboardUrl}/api/dashboard/webhook/x402-settlement`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            endpoint: endpointPath,
+            payer: verifyData.payer,
+            amount: price,
+            currency: "USDC",
+            network: config.assets.usdc.network,
+            txHash: verifyData.transactionHash,
+          }),
+        }).catch(err => console.error("Dashboard webhook failed:", err));
+
         return next();
       }
     } catch (e) {

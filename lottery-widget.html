@@ -3,200 +3,691 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Micro-Lottery Checkout</title>
+  <title>MicroLottery - Hedera x402</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.11.1/dist/ethers.umd.min.js"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a0f; color: #e4e4e7; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-    .widget { background: linear-gradient(135deg, #18181b 0%, #0f0f12 100%); border: 1px solid #27272a; border-radius: 16px; padding: 32px; max-width: 400px; width: 100%; box-shadow: 0 20px 40px -12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05); }
-    .product { display: flex; gap: 16px; margin-bottom: 24px; }
-    .product-img { width: 80px; height: 80px; border-radius: 12px; background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); display: flex; align-items: center; justify-content: center; font-size: 32px; flex-shrink: 0; }
-    .product-info { flex: 1; min-width: 0; }
-    .product-name { font-size: 16px; font-weight: 600; color: #fafafa; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .product-desc { font-size: 13px; color: #71717a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .price-row { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-top: 1px solid #27272a; border-bottom: 1px solid #27272a; margin-bottom: 20px; }
-    .price-label { font-size: 14px; color: #a1a1aa; }
-    .price-amount { font-size: 24px; font-weight: 700; color: #fafafa; font-variant-numeric: tabular-nums; }
-    .btn { width: 100%; padding: 16px 24px; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.15s ease; display: flex; align-items: center; justify-content: center; gap: 10px; }
-    .btn-primary { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3); }
-    .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4); }
-    .btn-primary:active:not(:disabled) { transform: translateY(0); }
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-loading { display: none; }
-    .btn.loading .btn-text { display: none; }
-    .btn.loading .btn-loading { display: flex; }
-    .spinner { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .status { margin-top: 16px; padding: 12px 16px; border-radius: 8px; font-size: 13px; display: none; }
-    .status.success { display: block; background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(34, 197, 94, 0.3); color: #4ade80; }
-    .status.error { display: block; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; }
-    .status.pending { display: block; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); color: #60a5fa; }
-    .tx-link { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
-    .footer { margin-top: 20px; text-align: center; font-size: 11px; color: #52525b; }
-    .footer a { color: #8b5cf6; text-decoration: none; }
-    .footer a:hover { text-decoration: underline; }
+    .btn { @apply px-6 py-3 rounded-xl font-semibold transition-all duration-150; }
+    .btn-primary { @apply bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/30 hover:from-blue-500 hover:to-blue-600 hover:-translate-y-0.5; }
+    .btn-secondary { @apply bg-gray-800 text-gray-200 border border-gray-700 hover:bg-gray-700; }
+    .btn-success { @apply bg-gradient-to-r from-green-600 to-emerald-700 text-white shadow-lg shadow-green-500/30; }
+    .btn-danger { @apply bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-500/30; }
+    .btn:disabled { @apply opacity-50 cursor-not-allowed; }
+    .input { @apply w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20; }
+    .card { @apply bg-gray-900/50 border border-gray-700/50 rounded-2xl p-6; }
+    .status-badge { @apply px-3 py-1 rounded-full text-xs font-medium; }
+    .status-active { @apply bg-green-500/20 text-green-400; }
+    .status-pending { @apply bg-yellow-500/20 text-yellow-400; }
+    .status-drawn { @apply bg-purple-500/20 text-purple-400; }
+    .status-none { @apply bg-gray-500/20 text-gray-400; }
+    .mono { @apply font-mono text-sm; }
+    .spinner { @apply w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin; }
   </style>
 </head>
-<body>
-  <div class="widget" id="widget">
-    <div class="product">
-      <div class="product-img" id="productImg">🎧</div>
-      <div class="product-info">
-        <div class="product-name" id="productName">Wireless Pro Headphones</div>
-        <div class="product-desc" id="productDesc">Premium noise-cancelling, 40hr battery</div>
+<body class="bg-gray-950 text-gray-100 min-h-screen">
+  <div class="max-w-5xl mx-auto p-6 space-y-6">
+    <!-- Header -->
+    <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="text-3xl font-bold flex items-center gap-3">
+          <svg class="w-10 h-10 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+          MicroLottery
+        </h1>
+        <p class="text-gray-400 mt-1">Decentralized micro-lottery on Hedera • PRNG System Contract 0x16F • 2.5% protocol fee</p>
+      </div>
+      <div class="flex gap-3" id="walletStatus">
+        <button class="btn btn-secondary" id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
+      </div>
+    </header>
+
+    <!-- Network / Contract Info -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="card">
+        <div class="text-gray-400 text-sm mb-1">Network</div>
+        <div class="font-mono text-lg" id="networkDisplay">testnet</div>
+      </div>
+      <div class="card">
+        <div class="text-gray-400 text-sm mb-1">Contract</div>
+        <div class="font-mono text-sm break-all" id="contractDisplay">0x0e1421ADC7089E9e537c86a4fa8bB07498164DfB</div>
+      </div>
+      <div class="card">
+        <div class="text-gray-400 text-sm mb-1">Protocol Fee</div>
+        <div class="font-mono text-lg" id="feeDisplay">2.5% (250 bps)</div>
       </div>
     </div>
-    <div class="price-row">
-      <span class="price-label">Ticket Price</span>
-      <span class="price-amount" id="priceAmount">10 HBAR</span>
+
+    <!-- Current Round -->
+    <div class="card" id="currentRoundCard" style="display:none;">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+        <h2 class="text-xl font-semibold">Current Round</h2>
+        <span class="status-badge status-none" id="roundStatus">Loading...</span>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-4">
+        <div>
+          <div class="text-gray-400 text-sm">Round ID</div>
+          <div class="font-mono text-2xl" id="roundId">-</div>
+        </div>
+        <div>
+          <div class="text-gray-400 text-sm">Ticket Price</div>
+          <div class="font-mono text-2xl text-purple-400" id="ticketPrice">- HBAR</div>
+        </div>
+        <div>
+          <div class="text-gray-400 text-sm">Tickets Sold</div>
+          <div class="font-mono text-2xl" id="ticketsSold">-</div>
+        </div>
+        <div>
+          <div class="text-gray-400 text-sm">Prize Pool</div>
+          <div class="font-mono text-2xl text-green-400" id="prizePool">- HBAR</div>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+        <div>
+          <div class="text-gray-400 text-sm">Product</div>
+          <div class="font-medium" id="productName">-</div>
+        </div>
+        <div>
+          <div class="text-gray-400 text-sm">Description</div>
+          <div class="text-gray-300 text-sm" id="productDesc">-</div>
+        </div>
+        <div>
+          <div class="text-gray-400 text-sm">End Time</div>
+          <div class="font-mono text-sm" id="roundEndTime">Manual draw</div>
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-3">
+        <button class="btn btn-primary flex-1 sm:flex-none" id="buyTicketBtn" onclick="buyTicket()" disabled>Buy Ticket</button>
+        <button class="btn btn-secondary" id="refreshRoundBtn" onclick="loadCurrentRound()">Refresh</button>
+      </div>
     </div>
-    <button class="btn btn-primary" id="checkoutBtn" onclick="handleCheckout()">
-      <span class="btn-text">Enter Lottery →</span>
-      <span class="btn-loading"><span class="spinner"></span> Connecting...</span>
-    </button>
-    <div class="status" id="status"></div>
-    <div class="footer">
-      Powered by <a href="https://hedera.com" target="_blank">Hedera</a> • Smart Contract: <span id="contractAddr">0x...</span>
+
+    <!-- Tabs -->
+    <div class="card">
+      <div class="flex border-b border-gray-700 mb-6" id="tabBar">
+        <button class="tab-active px-4 py-3 font-medium" data-tab="user">My Tickets</button>
+        <button class="tab-inactive px-4 py-3 font-medium" data-tab="admin">Admin Panel</button>
+        <button class="tab-inactive px-4 py-3 font-medium" data-tab="history">Round History</button>
+      </div>
+
+      <!-- User Tab -->
+      <div id="tab-user" class="tab-content">
+        <div id="userTicketsLoading" class="text-center py-8 text-gray-400 hidden">Loading tickets...</div>
+        <div id="userTicketsEmpty" class="text-center py-8 text-gray-400 hidden">No tickets purchased yet. Buy a ticket to participate!</div>
+        <div class="overflow-x-auto" id="userTicketsTable" style="display:none;">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-left text-gray-400 border-b border-gray-700">
+                <th class="pb-2">Round</th>
+                <th class="pb-2">Ticket IDs</th>
+                <th class="pb-2">Count</th>
+                <th class="pb-2">Status</th>
+              </tr>
+            </thead>
+            <tbody id="userTicketsBody" class="text-gray-300"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Admin Tab -->
+      <div id="tab-admin" class="tab-content hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Create Round -->
+          <div class="card">
+            <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+              <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              Create New Round
+            </h3>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm text-gray-400 mb-1">Product Name</label>
+                <input type="text" class="input" id="adminProductName" placeholder="e.g., Wireless Pro Headphones" value="Wireless Pro Headphones">
+              </div>
+              <div>
+                <label class="block text-sm text-gray-400 mb-1">Product Description</label>
+                <textarea class="input" id="adminProductDesc" rows="2" placeholder="Product description...">Premium noise-cancelling, 40hr battery</textarea>
+              </div>
+              <div>
+                <label class="block text-sm text-gray-400 mb-1">Product Image URL</label>
+                <input type="text" class="input" id="adminProductImage" placeholder="https://example.com/image.png" value="https://via.placeholder.com/300">
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm text-gray-400 mb-1">Ticket Price (HBAR)</label>
+                  <input type="number" class="input" id="adminTicketPrice" placeholder="10" value="10" min="1" step="1">
+                </div>
+                <div>
+                  <label class="block text-sm text-gray-400 mb-1">Duration (seconds, 0 = manual)</label>
+                  <input type="number" class="input" id="adminDuration" placeholder="0" value="0" min="0" step="1">
+                </div>
+              </div>
+              <button class="btn btn-primary w-full" id="createRoundBtn" onclick="createRound()">Create Round</button>
+            </div>
+          </div>
+
+          <!-- Draw Winner -->
+          <div class="card">
+            <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+              <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+              Draw Winner
+            </h3>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm text-gray-400 mb-1">Round ID</label>
+                <input type="number" class="input" id="adminDrawRoundId" placeholder="Current round ID" min="1">
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <button class="btn btn-primary" id="requestRandomnessBtn" onclick="requestRandomness()">Request Randomness (PRNG)</button>
+                <button class="btn btn-success" id="drawWinnerBtn" onclick="drawWinner()" disabled>Draw Winner</button>
+              </div>
+              <div class="p-4 bg-gray-800/50 rounded-xl border border-gray-700">
+                <div class="text-gray-400 text-sm mb-2">PRNG Status</div>
+                <div class="font-mono text-sm" id="prngStatus">No request made</div>
+                <div class="text-gray-400 text-sm mt-2">Winner</div>
+                <div class="font-mono text-sm text-green-400" id="winnerDisplay">Not drawn</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dashboard Webhook -->
+          <div class="card lg:col-span-2">
+            <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+              <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+              Report Protocol Fees to Revenue Dashboard
+            </h3>
+            <p class="text-gray-400 text-sm mb-4">Call this after a round is drawn to send the 2.5% protocol fees to the revenue dashboard.</p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+              <div>
+                <label class="block text-sm text-gray-400 mb-1">Round ID</label>
+                <input type="number" class="input" id="webhookRoundId" placeholder="Round ID" min="1">
+              </div>
+              <div>
+                <label class="block text-sm text-gray-400 mb-1">Tickets Sold</label>
+                <input type="number" class="input" id="webhookTicketsSold" placeholder="Tickets sold" min="0">
+              </div>
+              <div>
+                <label class="block text-sm text-gray-400 mb-1">Tx Hash (fee transfer)</label>
+                <input type="text" class="input" id="webhookTxHash" placeholder="0x... or 0.0.XXXXXX">
+              </div>
+            </div>
+            <button class="btn btn-success" id="sendWebhookBtn" onclick="sendLotteryWebhook()">Send to Dashboard</button>
+            <div id="webhookResult" class="mt-4 text-sm hidden"></div>
+          </div>
+
+          <!-- Contract Config -->
+          <div class="card lg:col-span-2">
+            <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+              <svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              Contract Configuration
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm text-gray-400 mb-1">Protocol Fee (bps)</label>
+                <input type="number" class="input" id="configFeeBps" placeholder="250" value="250" min="0" max="10000">
+              </div>
+              <div>
+                <label class="block text-sm text-gray-400 mb-1">Fee Receiver Address</label>
+                <input type="text" class="input" id="configFeeReceiver" placeholder="0x..." value="0xCc7Cc2c2c11e82F175cAc1249038eB338bA099Bd">
+              </div>
+            </div>
+            <button class="btn btn-secondary mt-4" id="updateConfigBtn" onclick="updateProtocolFee()">Update Protocol Fee</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- History Tab -->
+      <div id="tab-history" class="tab-content hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-left text-gray-400 border-b border-gray-700">
+                <th class="pb-2">Round</th>
+                <th class="pb-2">Product</th>
+                <th class="pb-2">Ticket Price</th>
+                <th class="pb-2">Tickets Sold</th>
+                <th class="pb-2">Status</th>
+                <th class="pb-2">Winner</th>
+                <th class="pb-2">Tx Hash</th>
+              </tr>
+            </thead>
+            <tbody id="historyBody" class="text-gray-300"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 hidden"></div>
   </div>
 
   <script>
-    // CONFIGURATION — replace with your deployed values
+    // ============ CONFIGURATION ============
     const CONFIG = {
-      contractId: '0.0.5982905',        // Hedera Contract ID (from mirror node lookup)
-      contractEvmAddress: '0x9EaF48a7D2D1C1FFD206B4082F39e41fA23f26B1',      // EVM address of deployed contract
-      ticketPriceHbar: 10,              // HBAR per ticket
-      productName: 'Wireless Pro Headphones',
-      productDesc: 'Premium noise-cancelling, 40hr battery',
-      productEmoji: '🎧',
-      network: 'testnet',               // 'testnet' | 'mainnet'
-      rpcUrl: 'https://testnet.hashio.io/api', // Hedera JSON-RPC relay
+      contractEvmAddress: '0x0e1421ADC7089E9e537c86a4fa8bB07498164DfB',  // Deployed contract
+      contractId: '0.0.XXXXXX',  // Will be resolved from mirror node
+      network: 'testnet',
+      rpcUrl: 'https://testnet.hashio.io/api',
+      dashboardUrl: 'https://hedera-revenue-dashboard.mobicobe.workers.dev',
+      protocolFeeBps: 250,
+      protocolFeeReceiver: '0xCc7Cc2c2c11e82F175cAc1249038eB338bA099Bd',
     };
 
-    // Initialize UI
-    document.getElementById('productName').textContent = CONFIG.productName;
-    document.getElementById('productDesc').textContent = CONFIG.productDesc;
-    document.getElementById('productImg').textContent = CONFIG.productEmoji;
-    document.getElementById('priceAmount').textContent = `${CONFIG.ticketPriceHbar} HBAR`;
-    document.getElementById('contractAddr').textContent = CONFIG.contractEvmAddress;
+    // Contract ABI
+    const CONTRACT_ABI = [
+      'function buyTicket() external payable returns (uint256 ticketId)',
+      'function createRound(uint256 _ticketPriceHbar, string _productName, string _productDescription, string _productImageUrl, uint256 _durationSeconds) external',
+      'function requestRandomness() external',
+      'function drawWinner() external',
+      'function getCurrentRound() external view returns (uint256 roundId, uint256 ticketPrice, uint256 startTime, uint256 endTime, uint256 totalTickets, address winner, bytes32 prngRequestId, bool prngRequested, bool drawn, string productName, string productDescription, string productImageUrl)',
+      'function getRound(uint256 roundId) external view returns (uint256 roundId, uint256 ticketPrice, uint256 startTime, uint256 endTime, uint256 totalTickets, address winner, bytes32 prngRequestId, bool prngRequested, bool drawn, string productName, string productDescription, string productImageUrl)',
+      'function getUserTickets(uint256 roundId, address user) external view returns (uint256[] memory)',
+      'function getParticipants(uint256 roundId) external view returns (address[] memory)',
+      'function protocolFeeBps() external view returns (uint256)',
+      'function protocolFeeReceiver() external view returns (address)',
+      'function setProtocolFee(uint256 _feeBps, address _receiver) external',
+      'event RoundCreated(uint256 indexed roundId, uint256 ticketPrice, string productName)',
+      'event TicketPurchased(uint256 indexed roundId, address indexed buyer, uint256 ticketId)',
+      'event PRNGRequested(uint256 indexed roundId, bytes32 requestId)',
+      'event WinnerDrawn(uint256 indexed roundId, address indexed winner, uint256 winningTicketId, bytes32 prngOutput)',
+      'event ProtocolFeeUpdated(uint256 newFeeBps, address newReceiver)',
+    ];
 
-    let walletConnected = false;
+    // ============ STATE ============
+    let provider = null;
     let signer = null;
+    let contract = null;
+    let userAccount = null;
+    let currentRoundId = 0;
 
-    async function handleCheckout() {
-      const btn = document.getElementById('checkoutBtn');
-      const status = document.getElementById('status');
-
-      if (!walletConnected) {
-        await connectWallet();
-        if (!walletConnected) return;
-      }
-
-      btn.classList.add('loading');
-      btn.disabled = true;
-      status.className = 'status pending';
-      status.textContent = 'Submitting transaction...';
-
-      try {
-        const txHash = await buyTicket();
-        status.className = 'status pending';
-        status.innerHTML = `Transaction submitted! <a class="tx-link" href="https://hashscan.io/${CONFIG.network}/tx/${txHash}" target="_blank">View on HashScan</a>`;
-
-        // Poll for receipt
-        const receipt = await waitForReceipt(txHash);
-        if (receipt.status === 'SUCCESS') {
-          status.className = 'status success';
-          status.innerHTML = `🎉 Ticket purchased! Check <a class="tx-link" href="https://hashscan.io/${CONFIG.network}/tx/${txHash}" target="_blank">HashScan</a> for confirmation.`;
-        } else {
-          throw new Error(`Transaction failed: ${receipt.status}`);
-        }
-      } catch (err) {
-        status.className = 'status error';
-        status.textContent = `Error: ${err.message}`;
-      } finally {
-        btn.classList.remove('loading');
-        btn.disabled = false;
-      }
+    // ============ UTILITIES ============
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      const bg = type === 'success' ? 'bg-green-600' : type === 'error' ? 'bg-red-600' : type === 'warning' ? 'bg-yellow-600' : 'bg-blue-600';
+      toast.className = `fixed bottom-6 right-6 z-50 px-6 py-4 rounded-xl ${bg} text-white shadow-lg`;
+      toast.textContent = message;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 5000);
     }
 
-    async function connectWallet() {
-      const status = document.getElementById('status');
-      const btn = document.getElementById('checkoutBtn');
+    function fmtAddr(addr) {
+      if (!addr || addr === '0x0000000000000000000000000000000000000000') return '—';
+      return addr.slice(0, 6) + '...' + addr.slice(-4);
+    }
 
-      // Detect HashPack / Blade / MetaMask (Hedera-compatible)
-      const provider = window.ethereum || window.hashpack || window.blade;
-      if (!provider) {
-        status.className = 'status error';
-        status.innerHTML = 'No Hedera wallet detected. Install <a class="tx-link" href="https://hashpack.app" target="_blank">HashPack</a> or <a class="tx-link" href="https://bladewallet.io" target="_blank">Blade</a>.';
+    function fmtHbar(tinybars) {
+      const hbar = Number(tinybars) / 100_000_000;
+      return hbar.toFixed(2) + ' HBAR';
+    }
+
+    function fmtDate(ts) {
+      if (!ts || ts === '0') return '—';
+      return new Date(Number(ts) * 1000).toLocaleString();
+    }
+
+    // ============ WALLET ============
+    async function connectWallet() {
+      const status = document.getElementById('walletStatus');
+      const btn = document.getElementById('connectBtn');
+
+      const ethProvider = window.ethereum || window.hashpack || window.blade;
+      if (!ethProvider) {
+        showToast('No Hedera wallet detected. Install HashPack or Blade.', 'error');
         return;
       }
 
       try {
         btn.classList.add('loading');
         btn.disabled = true;
-        status.className = 'status pending';
-        status.textContent = 'Connecting wallet...';
+        btn.querySelector('.btn-text').textContent = 'Connecting...';
 
-        const accounts = await provider.request({ method: 'eth_requestAccounts' });
+        const accounts = await ethProvider.request({ method: 'eth_requestAccounts' });
         if (!accounts.length) throw new Error('No accounts returned');
 
-        signer = provider;
+        userAccount = accounts[0];
+        provider = new ethers.BrowserProvider(ethProvider);
+        signer = await provider.getSigner();
+        contract = new ethers.Contract(CONFIG.contractEvmAddress, CONTRACT_ABI, signer);
+
         walletConnected = true;
-        btn.querySelector('.btn-text').textContent = `Enter Lottery (${accounts[0].slice(0,6)}...${accounts[0].slice(-4)})`;
-        status.className = 'status success';
-        status.textContent = 'Wallet connected!';
-        setTimeout(() => { status.style.display = 'none'; }, 2000);
+        btn.classList.remove('loading');
+        btn.querySelector('.btn-text').textContent = `Connected: ${fmtAddr(userAccount)}`;
+        btn.classList.add('btn-secondary');
+        btn.onclick = null;
+        showToast('Wallet connected!', 'success');
+
+        await loadCurrentRound();
+        await loadUserTickets();
+        await loadHistory();
       } catch (err) {
-        status.className = 'status error';
-        status.textContent = `Connection failed: ${err.message}`;
+        btn.classList.remove('loading');
+        btn.disabled = false;
+        showToast(`Connection failed: ${err.message}`, 'error');
+      }
+    }
+
+    // ============ CONTRACT READ ============
+    async function loadCurrentRound() {
+      if (!contract) return;
+      try {
+        const round = await contract.getCurrentRound();
+        currentRoundId = Number(round.roundId);
+        renderRound(round);
+        document.getElementById('currentRoundCard').style.display = 'block';
+        document.getElementById('buyTicketBtn').disabled = !round.drawn && Number(round.totalTickets) >= 0;
+      } catch (err) {
+        console.error('Failed to load current round:', err);
+      }
+    }
+
+    function renderRound(round) {
+      const drawn = round.drawn;
+      const statusEl = document.getElementById('roundStatus');
+      statusEl.textContent = drawn ? 'Drawn' : (round.prngRequested ? 'PRNG Requested' : 'Active');
+      statusEl.className = `status-badge ${drawn ? 'status-drawn' : round.prngRequested ? 'status-pending' : 'status-active'}`;
+
+      document.getElementById('roundId').textContent = '#' + round.roundId;
+      document.getElementById('ticketPrice').textContent = fmtHbar(round.ticketPrice);
+      document.getElementById('ticketsSold').textContent = round.totalTickets.toString();
+      const prizePool = (Number(round.ticketPrice) * Number(round.totalTickets) * (10000 - CONFIG.protocolFeeBps) / 10000) / 100_000_000;
+      document.getElementById('prizePool').textContent = prizePool.toFixed(2) + ' HBAR';
+      document.getElementById('productName').textContent = round.productName;
+      document.getElementById('productDesc').textContent = round.productDescription;
+      document.getElementById('roundEndTime').textContent = round.endTime === 0 ? 'Manual draw' : fmtDate(round.endTime);
+
+      // Admin: enable draw button if PRNG requested
+      const drawBtn = document.getElementById('drawWinnerBtn');
+      const requestBtn = document.getElementById('requestRandomnessBtn');
+      if (round.prngRequested && !drawn) {
+        drawBtn.disabled = false;
+        requestBtn.disabled = true;
+        document.getElementById('prngStatus').textContent = 'Ready - ' + round.prngRequestId;
+        document.getElementById('prngStatus').classList.add('text-green-400');
+      } else if (drawn) {
+        drawBtn.disabled = true;
+        requestBtn.disabled = true;
+        document.getElementById('winnerDisplay').textContent = fmtAddr(round.winner);
+        document.getElementById('prngStatus').textContent = 'Drawn - ' + round.prngRequestId;
+      } else {
+        drawBtn.disabled = true;
+        requestBtn.disabled = false;
+        document.getElementById('prngStatus').textContent = 'Not requested';
+        document.getElementById('prngStatus').classList.remove('text-green-400');
+      }
+
+      document.getElementById('adminDrawRoundId').value = round.roundId;
+      document.getElementById('webhookRoundId').value = round.roundId;
+      document.getElementById('webhookTicketsSold').value = round.totalTickets;
+    }
+
+    async function loadUserTickets() {
+      if (!contract || !userAccount) return;
+      const loading = document.getElementById('userTicketsLoading');
+      const empty = document.getElementById('userTicketsEmpty');
+      const table = document.getElementById('userTicketsTable');
+      const body = document.getElementById('userTicketsBody');
+
+      loading.classList.remove('hidden');
+      empty.classList.add('hidden');
+      table.style.display = 'none';
+      body.innerHTML = '';
+
+      try {
+        // Check all rounds up to current
+        for (let i = 1; i <= currentRoundId; i++) {
+          const tickets = await contract.getUserTickets(i, userAccount);
+          if (tickets.length > 0) {
+            const round = await contract.getRound(i);
+            const row = document.createElement('tr');
+            row.className = 'border-b border-gray-800 hover:bg-gray-800';
+            row.innerHTML = `
+              <td class="py-2">#${i}</td>
+              <td class="py-2 mono">${tickets.map(t => '#' + t).join(', ')}</td>
+              <td class="py-2">${tickets.length}</td>
+              <td class="py-2"><span class="status-badge ${round.drawn ? 'status-drawn' : 'status-active'}">${round.drawn ? 'Drawn' : 'Active'}</span></td>
+            `;
+            body.appendChild(row);
+          }
+        }
+
+        if (body.children.length === 0) {
+          empty.classList.remove('hidden');
+        } else {
+          table.style.display = 'block';
+        }
+      } catch (err) {
+        console.error('Failed to load user tickets:', err);
+        showToast('Failed to load tickets', 'error');
+      } finally {
+        loading.classList.add('hidden');
+      }
+    }
+
+    async function loadHistory() {
+      if (!contract) return;
+      const body = document.getElementById('historyBody');
+      body.innerHTML = '';
+
+      try {
+        for (let i = 1; i <= currentRoundId; i++) {
+          const round = await contract.getRound(i);
+          if (Number(round.roundId) === 0) continue;
+
+          const row = document.createElement('tr');
+          row.className = 'border-b border-gray-800 hover:bg-gray-800';
+          const winnerAddr = round.winner && round.winner !== '0x0000000000000000000000000000000000000000' ? fmtAddr(round.winner) : '—';
+          row.innerHTML = `
+            <td class="py-2">#${round.roundId}</td>
+            <td class="py-2">${round.productName}</td>
+            <td class="py-2 mono">${fmtHbar(round.ticketPrice)}</td>
+            <td class="py-2">${round.totalTickets}</td>
+            <td class="py-2"><span class="status-badge ${round.drawn ? 'status-drawn' : round.prngRequested ? 'status-pending' : 'status-active'}">${round.drawn ? 'Drawn' : round.prngRequested ? 'PRNG Requested' : 'Active'}</span></td>
+            <td class="py-2 mono">${winnerAddr}</td>
+            <td class="py-2 mono">${round.prngRequestId ? round.prngRequestId.slice(0,12)+'...' : '—'}</td>
+          `;
+          body.appendChild(row);
+        }
+      } catch (err) {
+        console.error('Failed to load history:', err);
+      }
+    }
+
+    // ============ USER ACTIONS ============
+    async function buyTicket() {
+      if (!contract) return;
+      const btn = document.getElementById('buyTicketBtn');
+      btn.classList.add('loading');
+      btn.disabled = true;
+      btn.querySelector('.btn-text').textContent = 'Processing...';
+
+      try {
+        const ticketPriceTinybars = await contract.getCurrentRound().then(r => r.ticketPrice);
+        const tx = await contract.buyTicket({ value: ticketPriceTinybars });
+        showToast('Transaction submitted! Waiting for confirmation...', 'info');
+        const receipt = await tx.wait();
+        showToast(`Ticket purchased! Tx: ${fmtAddr(receipt.hash)}`, 'success');
+        await loadCurrentRound();
+        await loadUserTickets();
+      } catch (err) {
+        showToast(`Purchase failed: ${err.message}`, 'error');
+      } finally {
+        btn.classList.remove('loading');
+        btn.disabled = false;
+        btn.querySelector('.btn-text').textContent = 'Buy Ticket';
+      }
+    }
+
+    // ============ ADMIN ACTIONS ============
+    async function createRound() {
+      if (!contract) return;
+      const btn = document.getElementById('createRoundBtn');
+      const price = parseInt(document.getElementById('adminTicketPrice').value);
+      const duration = parseInt(document.getElementById('adminDuration').value);
+      const name = document.getElementById('adminProductName').value;
+      const desc = document.getElementById('adminProductDesc').value;
+      const image = document.getElementById('adminProductImage').value;
+
+      if (!price || !name) { showToast('Price and name required', 'error'); return; }
+
+      btn.classList.add('loading');
+      btn.disabled = true;
+
+      try {
+        const tx = await contract.createRound(price, name, desc, image, duration);
+        showToast('Creating round...', 'info');
+        await tx.wait();
+        showToast('Round created!', 'success');
+        await loadCurrentRound();
+        await loadHistory();
+      } catch (err) {
+        showToast(`Failed: ${err.message}`, 'error');
       } finally {
         btn.classList.remove('loading');
         btn.disabled = false;
       }
     }
 
-    async function buyTicket() {
-      // Contract ABI fragment for buyTicket()
-      const abi = [
-        'function buyTicket() external payable returns (uint256 ticketId)'
-      ];
-      const iface = new ethers.utils.Interface(abi);
-      const data = iface.encodeFunctionData('buyTicket', []);
+    async function requestRandomness() {
+      if (!contract) return;
+      const btn = document.getElementById('requestRandomnessBtn');
+      const roundId = parseInt(document.getElementById('adminDrawRoundId').value) || currentRoundId;
 
-      const tx = {
-        to: CONFIG.contractEvmAddress,
-        data: data,
-        value: ethers.utils.parseEther(CONFIG.ticketPriceHbar.toString()),
-        gasLimit: 300000,
-      };
+      btn.classList.add('loading');
+      btn.disabled = true;
 
-      // Use eth_sendTransaction via provider
-      const txHash = await signer.request({
-        method: 'eth_sendTransaction',
-        params: [tx],
-      });
-
-      return txHash;
-    }
-
-    async function waitForReceipt(txHash, maxAttempts = 30) {
-      for (let i = 0; i < maxAttempts; i++) {
-        await new Promise(r => setTimeout(r, 2000));
-        try {
-          const receipt = await signer.request({
-            method: 'eth_getTransactionReceipt',
-            params: [txHash],
-          });
-          if (receipt) return receipt;
-        } catch (_) {}
+      try {
+        const tx = await contract.requestRandomness();
+        showToast('Requesting randomness from Hedera PRNG...', 'info');
+        await tx.wait();
+        showToast('PRNG requested!', 'success');
+        await loadCurrentRound();
+      } catch (err) {
+        showToast(`Failed: ${err.message}`, 'error');
+      } finally {
+        btn.classList.remove('loading');
+        btn.disabled = false;
       }
-      throw new Error('Receipt polling timeout');
     }
 
-    // Load ethers.js from CDN
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/ethers@6.11.1/dist/ethers.umd.min.js';
-    script.onload = () => { window.ethers = ethers; };
-    document.head.appendChild(script);
+    async function drawWinner() {
+      if (!contract) return;
+      const btn = document.getElementById('drawWinnerBtn');
+      const roundId = parseInt(document.getElementById('adminDrawRoundId').value) || currentRoundId;
+
+      btn.classList.add('loading');
+      btn.disabled = true;
+
+      try {
+        const tx = await contract.drawWinner();
+        showToast('Drawing winner...', 'info');
+        const receipt = await tx.wait();
+        showToast('Winner drawn!', 'success');
+        await loadCurrentRound();
+        await loadHistory();
+        await loadUserTickets();
+      } catch (err) {
+        showToast(`Failed: ${err.message}`, 'error');
+      } finally {
+        btn.classList.remove('loading');
+        btn.disabled = false;
+      }
+    }
+
+    async function updateProtocolFee() {
+      if (!contract) return;
+      const btn = document.getElementById('updateConfigBtn');
+      const feeBps = parseInt(document.getElementById('configFeeBps').value);
+      const receiver = document.getElementById('configFeeReceiver').value;
+
+      if (isNaN(feeBps) || !receiver) { showToast('Invalid values', 'error'); return; }
+
+      btn.classList.add('loading');
+      btn.disabled = true;
+
+      try {
+        const tx = await contract.setProtocolFee(feeBps, receiver);
+        showToast('Updating protocol fee...', 'info');
+        await tx.wait();
+        CONFIG.protocolFeeBps = feeBps;
+        CONFIG.protocolFeeReceiver = receiver;
+        document.getElementById('feeDisplay').textContent = `${(feeBps/100).toFixed(1)}% (${feeBps} bps)`;
+        showToast('Protocol fee updated!', 'success');
+      } catch (err) {
+        showToast(`Failed: ${err.message}`, 'error');
+      } finally {
+        btn.classList.remove('loading');
+        btn.disabled = false;
+      }
+    }
+
+    // ============ DASHBOARD WEBHOOK ============
+    async function sendLotteryWebhook() {
+      const btn = document.getElementById('sendWebhookBtn');
+      const result = document.getElementById('webhookResult');
+      const roundId = parseInt(document.getElementById('webhookRoundId').value);
+      const ticketsSold = parseInt(document.getElementById('webhookTicketsSold').value);
+      const txHash = document.getElementById('webhookTxHash').value;
+
+      if (!roundId || isNaN(ticketsSold) || !txHash) {
+        showToast('All fields required', 'error');
+        return;
+      }
+
+      btn.classList.add('loading');
+      btn.disabled = true;
+      result.classList.add('hidden');
+
+      try {
+        const ticketPriceTinybars = (await contract.getRound(roundId)).ticketPrice;
+        const protocolFeeTinybars = Math.floor((Number(ticketPriceTinybars) * ticketsSold * CONFIG.protocolFeeBps) / 10000);
+
+        const res = await fetch(`${CONFIG.dashboardUrl}/api/dashboard/webhook/lottery-fee`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            roundId,
+            ticketPriceTinybars: Number(ticketPriceTinybars),
+            ticketsSold,
+            protocolFeeBps: CONFIG.protocolFeeBps,
+            protocolFeeReceiver: CONFIG.protocolFeeReceiver,
+            txHash,
+          }),
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          result.classList.remove('hidden');
+          result.className = 'mt-4 text-sm text-green-400';
+          result.textContent = `✅ Webhook sent! Protocol fee: ${(protocolFeeTinybars/100_000_000).toFixed(8)} HBAR`;
+          showToast('Fees reported to dashboard!', 'success');
+        } else {
+          throw new Error('Webhook failed');
+        }
+      } catch (err) {
+        result.classList.remove('hidden');
+        result.className = 'mt-4 text-sm text-red-400';
+        result.textContent = `❌ Failed: ${err.message}`;
+        showToast(`Webhook failed: ${err.message}`, 'error');
+      } finally {
+        btn.classList.remove('loading');
+        btn.disabled = false;
+      }
+    }
+
+    // ============ TAB SWITCHING ============
+    document.querySelectorAll('[data-tab]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('[data-tab]').forEach(b => { b.classList.remove('tab-active'); b.classList.add('tab-inactive'); });
+        btn.classList.remove('tab-inactive'); btn.classList.add('tab-active');
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+        document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
+      });
+    });
+
+    // ============ INIT ============
+    document.getElementById('contractDisplay').textContent = CONFIG.contractEvmAddress;
+    document.getElementById('networkDisplay').textContent = CONFIG.network;
+    document.getElementById('feeDisplay').textContent = `${(CONFIG.protocolFeeBps/100).toFixed(1)}% (${CONFIG.protocolFeeBps} bps)`;
   </script>
 </body>
 </html>

@@ -4,12 +4,12 @@ info:
   description: |
     x402 micropayments API on Hedera testnet with 7 paid endpoints.
     Pay-per-call using the x402 protocol (HTTP 402 Payment Required).
-    
+
     **Pricing:**
     - Basic ($0.001): Token balances, Transaction history, Token price
     - Standard ($0.005): Token analytics, NFT metadata
     - Premium ($0.02): Compliance screening, DeFi positions
-    
+
     **Payment:** USDC on Hedera testnet via x402 facilitator
     **Discovery:** `/.well-known/x402.json`
   version: 1.0.0
@@ -422,16 +422,15 @@ components:
         totalEstimatedValueUsd: { type: number }
         lastUpdated: { type: string }
         paid: { type: boolean }
+  securitySchemes:
+    x402:
+      type: http
+      scheme: bearer
+      bearerFormat: x402
+      description: |
+        x402 Payment Required protocol.
+        Include `X-PAYMENT` header with signed payment payload.
+        See `/.well-known/x402.json` for pricing and facilitator details.
 
 security:
   - x402: []
-
-securitySchemes:
-  x402:
-    type: http
-    scheme: bearer
-    bearerFormat: x402
-    description: |
-      x402 Payment Required protocol.
-      Include `X-PAYMENT` header with signed payment payload.
-      See `/.well-known/x402.json` for pricing and facilitator details.

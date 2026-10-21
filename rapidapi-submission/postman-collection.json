@@ -1,0 +1,83 @@
+{
+  "info": {
+    "name": "Hedera Micropayments API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "hedera-x402-micropayments"
+  },
+  "item": [
+    {
+      "name": "x402 Discovery",
+      "request": {
+        "method": "GET",
+        "url": "https://hedera-micropayments-api.mobicobe.workers.dev/.well-known/x402.json"
+      }
+    },
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "url": "https://hedera-micropayments-api.mobicobe.workers.dev/health"
+      }
+    },
+    {
+      "name": "Token Balances (Basic - $0.001)",
+      "request": {
+        "method": "GET",
+        "url": "https://hedera-micropayments-api.mobicobe.workers.dev/api/v1/token/balances",
+        "queryParams": [
+          { "key": "accountId", "value": "0.0.123456", "description": "Hedera account ID" }
+        ]
+      }
+    },
+    {
+      "name": "Token Analytics (Standard - $0.005)",
+      "request": {
+        "method": "GET",
+        "url": "https://hedera-micropayments-api.mobicobe.workers.dev/api/v1/token/analytics/0.0.429274"
+      }
+    },
+    {
+      "name": "Compliance Screening (Premium - $0.02)",
+      "request": {
+        "method": "GET",
+        "url": "https://hedera-micropayments-api.mobicobe.workers.dev/api/v1/compliance/screen/0.0.123456"
+      }
+    },
+    {
+      "name": "NFT Metadata (Standard - $0.005)",
+      "request": {
+        "method": "GET",
+        "url": "https://hedera-micropayments-api.mobicobe.workers.dev/api/v1/nft/metadata/0.0.123456/1"
+      }
+    },
+    {
+      "name": "Transaction History (Basic - $0.001)",
+      "request": {
+        "method": "GET",
+        "url": "https://hedera-micropayments-api.mobicobe.workers.dev/api/v1/transactions/history/0.0.123456",
+        "queryParams": [
+          { "key": "limit", "value": "100" }
+        ]
+      }
+    },
+    {
+      "name": "Token Price (Basic - $0.001)",
+      "request": {
+        "method": "GET",
+        "url": "https://hedera-micropayments-api.mobicobe.workers.dev/api/v1/token/price/0.0.429274"
+      }
+    },
+    {
+      "name": "DeFi Positions (Premium - $0.02)",
+      "request": {
+        "method": "GET",
+        "url": "https://hedera-micropayments-api.mobicobe.workers.dev/api/v1/defi/positions/0.0.123456"
+      }
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "https://hedera-micropayments-api.mobicobe.workers.dev" },
+    { "key": "testAccount", "value": "0.0.123456" },
+    { "key": "testToken", "value": "0.0.429274" }
+  ]
+}

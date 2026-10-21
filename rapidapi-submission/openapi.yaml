@@ -1,0 +1,437 @@
+openapi: 3.0.3
+info:
+  title: Hedera Micropayments API
+  description: |
+    x402 micropayments API on Hedera testnet with 7 paid endpoints.
+    Pay-per-call using the x402 protocol (HTTP 402 Payment Required).
+    
+    **Pricing:**
+    - Basic ($0.001): Token balances, Transaction history, Token price
+    - Standard ($0.005): Token analytics, NFT metadata
+    - Premium ($0.02): Compliance screening, DeFi positions
+    
+    **Payment:** USDC on Hedera testnet via x402 facilitator
+    **Discovery:** `/.well-known/x402.json`
+  version: 1.0.0
+  contact:
+    name: mobicobe-bit
+    email: mobicobe@gmail.com
+    url: https://github.com/mobicobe-bit/hedera-x402-micropayments
+servers:
+  - url: https://hedera-micropayments-api.mobicobe.workers.dev
+    description: Production server (Hedera testnet)
+paths:
+  /.well-known/x402.json:
+    get:
+      summary: x402 Discovery Document
+      description: Returns x402 protocol discovery info with endpoint pricing and facilitator details
+      responses:
+        '200':
+          description: x402 discovery response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/X402Discovery'
+  /health:
+    get:
+      summary: Health Check
+      responses:
+        '200':
+          description: Service status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string }
+                  x402: { type: boolean }
+                  network: { type: string }
+                  timestamp: { type: string }
+  /api/v1/token/balances:
+    get:
+      summary: Query Token Balances (Basic - $0.001)
+      description: Returns all token balances for a Hedera account via mirror node
+      parameters:
+        - name: accountId
+          in: query
+          required: true
+          schema: { type: string, pattern: '^0\.0\.\d+$' }
+          example: "0.0.123456"
+      responses:
+        '200':
+          description: Token balances
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenBalancesResponse'
+        '402':
+          description: Payment required - x402 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/X402PaymentRequired'
+  /api/v1/token/analytics/{tokenId}:
+    get:
+      summary: Token Analytics (Standard - $0.005)
+      description: Returns analytics for a Hedera token (holders, supply, velocity, top holders)
+      parameters:
+        - name: tokenId
+          in: path
+          required: true
+          schema: { type: string, pattern: '^0\.0\.\d+$' }
+          example: "0.0.429274"
+      responses:
+        '200':
+          description: Token analytics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenAnalyticsResponse'
+        '402':
+          description: Payment required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/X402PaymentRequired'
+  /api/v1/compliance/screen/{accountId}:
+    get:
+      summary: Compliance Screening (Premium - $0.02)
+      description: Screens a Hedera account for KYC, AML, sanctions, and risk scoring
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema: { type: string, pattern: '^0\.0\.\d+$' }
+          example: "0.0.123456"
+      responses:
+        '200':
+          description: Compliance screening results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComplianceResponse'
+        '402':
+          description: Payment required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/X402PaymentRequired'
+  /api/v1/nft/metadata/{tokenId}/{serial}:
+    get:
+      summary: NFT Metadata & Ownership (Standard - $0.005)
+      description: Returns metadata and current owner for a specific NFT serial
+      parameters:
+        - name: tokenId
+          in: path
+          required: true
+          schema: { type: string, pattern: '^0\.0\.\d+$' }
+        - name: serial
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: NFT metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NFTMetadataResponse'
+        '402':
+          description: Payment required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/X402PaymentRequired'
+  /api/v1/transactions/history/{accountId}:
+    get:
+      summary: Transaction History (Basic - $0.001)
+      description: Returns recent transactions for a Hedera account
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema: { type: string, pattern: '^0\.0\.\d+$' }
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer, default: 100, minimum: 1, maximum: 500 }
+      responses:
+        '200':
+          description: Transaction history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionHistoryResponse'
+        '402':
+          description: Payment required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/X402PaymentRequired'
+  /api/v1/token/price/{tokenId}:
+    get:
+      summary: Token Price USD (Basic - $0.001)
+      description: Returns estimated USD price and 24h volume for a Hedera token
+      parameters:
+        - name: tokenId
+          in: path
+          required: true
+          schema: { type: string, pattern: '^0\.0\.\d+$' }
+          example: "0.0.429274"
+      responses:
+        '200':
+          description: Token price
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPriceResponse'
+        '402':
+          description: Payment required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/X402PaymentRequired'
+  /api/v1/defi/positions/{accountId}:
+    get:
+      summary: DeFi Positions & Yields (Premium - $0.02)
+      description: Returns DeFi positions (LP tokens, staking) for a Hedera account
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema: { type: string, pattern: '^0\.0\.\d+$' }
+          example: "0.0.123456"
+      responses:
+        '200':
+          description: DeFi positions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeFiPositionsResponse'
+        '402':
+          description: Payment required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/X402PaymentRequired'
+
+components:
+  schemas:
+    X402Discovery:
+      type: object
+      properties:
+        x402Version: { type: integer, example: 2 }
+        seller:
+          type: object
+          properties:
+            name: { type: string }
+            description: { type: string }
+            url: { type: string }
+        endpoints:
+          type: array
+          items:
+            type: object
+            properties:
+              path: { type: string }
+              method: { type: string }
+              price: { type: string }
+              currency: { type: string }
+              asset: { type: string }
+              network: { type: string }
+              description: { type: string }
+              params: { type: object }
+              facilitators:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    url: { type: string }
+                    address: { type: string }
+        networks: { type: array, items: { type: string } }
+        assets:
+          type: object
+          properties:
+            hbar:
+              type: object
+              properties:
+                address: { type: string }
+                decimals: { type: integer }
+                name: { type: string }
+            usdc:
+              type: object
+              properties:
+                address: { type: string }
+                decimals: { type: integer }
+                name: { type: string }
+        facilitator: { type: string }
+        facilitators:
+          type: array
+          items:
+            type: object
+            properties:
+              url: { type: string }
+              address: { type: string }
+    X402PaymentRequired:
+      type: object
+      properties:
+        x402Version: { type: integer }
+        error: { type: string }
+        accepts:
+          type: array
+          items:
+            type: object
+            properties:
+              scheme: { type: string }
+              network: { type: string }
+              maxAmountRequired: { type: string }
+              resource: { type: string }
+              description: { type: string }
+              mimeType: { type: string }
+              payTo: { type: string }
+              maxTimeoutSeconds: { type: integer }
+              asset: { type: string }
+              extra: { type: object }
+              facilitator:
+                type: object
+                properties:
+                  url: { type: string }
+                  address: { type: string }
+    TokenBalancesResponse:
+      type: object
+      properties:
+        accountId: { type: string }
+        tokens:
+          type: array
+          items:
+            type: object
+            properties:
+              tokenId: { type: string }
+              symbol: { type: string }
+              balance: { type: string }
+              decimals: { type: integer }
+        hbarBalance: { type: string }
+        source: { type: string }
+        paid: { type: boolean }
+    TokenAnalyticsResponse:
+      type: object
+      properties:
+        tokenId: { type: string }
+        analytics:
+          type: object
+          properties:
+            totalHolders: { type: integer }
+            totalSupply: { type: string }
+            circulatingSupply: { type: string }
+            velocity24h: { type: string }
+            topHolders:
+              type: array
+              items:
+                type: object
+                properties:
+                  accountId: { type: string }
+                  balance: { type: string }
+                  percentage: { type: string }
+            transfers24h: { type: integer }
+            uniqueSenders24h: { type: integer }
+            uniqueReceivers24h: { type: integer }
+        paid: { type: boolean }
+    ComplianceResponse:
+      type: object
+      properties:
+        accountId: { type: string }
+        screening:
+          type: object
+          properties:
+            kycStatus: { type: string }
+            amlFlags: { type: array, items: { type: string } }
+            sanctionsMatch: { type: boolean }
+            riskScore: { type: integer }
+            accountAgeDays: { type: integer }
+            isDeleted: { type: boolean }
+            isFrozen: { type: boolean }
+            lastScreened: { type: string }
+            sources: { type: array, items: { type: string } }
+        paid: { type: boolean }
+    NFTMetadataResponse:
+      type: object
+      properties:
+        tokenId: { type: string }
+        serial: { type: string }
+        metadata: { type: object, nullable: true }
+        owner: { type: string, nullable: true }
+        createdTimestamp: { type: string, nullable: true }
+        paid: { type: boolean }
+    TransactionHistoryResponse:
+      type: object
+      properties:
+        accountId: { type: string }
+        transactions:
+          type: array
+          items:
+            type: object
+            properties:
+              transactionId: { type: string }
+              consensusTimestamp: { type: string }
+              type: { type: string }
+              transfers:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    tokenId: { type: string }
+                    amount: { type: string }
+                    from: { type: string }
+                    to: { type: string }
+              hbarTransfers:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    amount: { type: string }
+                    from: { type: string }
+                    isApproval: { type: boolean }
+              result: { type: string }
+              chargedTxFee: { type: string }
+        count: { type: integer }
+        paid: { type: boolean }
+    TokenPriceResponse:
+      type: object
+      properties:
+        tokenId: { type: string }
+        priceUsd: { type: number, nullable: true }
+        priceUsdSource: { type: string }
+        volume24h: { type: string }
+        lastUpdated: { type: string }
+        paid: { type: boolean }
+    DeFiPositionsResponse:
+      type: object
+      properties:
+        accountId: { type: string }
+        defiPositions:
+          type: array
+          items:
+            type: object
+            properties:
+              tokenId: { type: string }
+              symbol: { type: string }
+              balance: { type: string }
+              estimatedValueUsd: { type: number }
+              protocol: { type: string }
+              positionType: { type: string }
+        totalPositions: { type: integer }
+        totalEstimatedValueUsd: { type: number }
+        lastUpdated: { type: string }
+        paid: { type: boolean }
+
+security:
+  - x402: []
+
+securitySchemes:
+  x402:
+    type: http
+    scheme: bearer
+    bearerFormat: x402
+    description: |
+      x402 Payment Required protocol.
+      Include `X-PAYMENT` header with signed payment payload.
+      See `/.well-known/x402.json` for pricing and facilitator details.

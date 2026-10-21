@@ -1,0 +1,138 @@
+{
+  "name": "Hedera Micropayments API",
+  "description": "x402 micropayments API on Hedera testnet - 7 endpoints for token data, analytics, compliance, NFTs, and DeFi. Pay-per-call via x402 protocol ($0.001-$0.02/call). No API keys, no subscriptions.",
+  "category": "Blockchain",
+  "tags": ["x402", "micropayments", "hedera", "web3", "blockchain", "pay-per-call", "api-monetization", "usdc", "token-analytics", "compliance", "defi", "nft"],
+  "version": "1.0.0",
+  "baseUrl": "https://hedera-micropayments-api.mobicobe.workers.dev",
+  "auth": {
+    "type": "x402",
+    "description": "x402 Payment Required Protocol - Include X-PAYMENT header with signed payment. See /.well-known/x402.json for pricing and facilitator details."
+  },
+  "pricing": {
+    "model": "pay-per-call",
+    "tiers": {
+      "basic": { "price": 0.001, "currency": "USD", "endpoints": ["token/balances", "transactions/history", "token/price"] },
+      "standard": { "price": 0.005, "currency": "USD", "endpoints": ["token/analytics", "nft/metadata"] },
+      "premium": { "price": 0.02, "currency": "USD", "endpoints": ["compliance/screen", "defi/positions"] }
+    },
+    "paymentAsset": "USDC (Hedera testnet: 0.0.429274)",
+    "facilitator": "https://x402.org/facilitator (Coinbase)"
+  },
+  "endpoints": [
+    {
+      "path": "/.well-known/x402.json",
+      "method": "GET",
+      "name": "x402 Discovery",
+      "description": "Returns x402 protocol discovery document with endpoint pricing and facilitator info",
+      "pricing": "free",
+      "parameters": []
+    },
+    {
+      "path": "/health",
+      "method": "GET",
+      "name": "Health Check",
+      "description": "Service health status",
+      "pricing": "free",
+      "parameters": []
+    },
+    {
+      "path": "/api/v1/token/balances",
+      "method": "GET",
+      "name": "Token Balances",
+      "description": "Returns all token balances for a Hedera account via mirror node",
+      "pricing": "basic",
+      "price": 0.001,
+      "parameters": [
+        { "name": "accountId", "in": "query", "required": true, "type": "string", "pattern": "^0\\.0\\.\\d+$", "example": "0.0.123456" }
+      ]
+    },
+    {
+      "path": "/api/v1/token/analytics/{tokenId}",
+      "method": "GET",
+      "name": "Token Analytics",
+      "description": "Returns analytics for a Hedera token (holders, supply, velocity, top holders)",
+      "pricing": "standard",
+      "price": 0.005,
+      "parameters": [
+        { "name": "tokenId", "in": "path", "required": true, "type": "string", "pattern": "^0\\.0\\.\\d+$", "example": "0.0.429274" }
+      ]
+    },
+    {
+      "path": "/api/v1/compliance/screen/{accountId}",
+      "method": "GET",
+      "name": "Compliance Screening",
+      "description": "Screens a Hedera account for KYC, AML, sanctions, and risk scoring",
+      "pricing": "premium",
+      "price": 0.02,
+      "parameters": [
+        { "name": "accountId", "in": "path", "required": true, "type": "string", "pattern": "^0\\.0\\.\\d+$", "example": "0.0.123456" }
+      ]
+    },
+    {
+      "path": "/api/v1/nft/metadata/{tokenId}/{serial}",
+      "method": "GET",
+      "name": "NFT Metadata & Ownership",
+      "description": "Returns metadata and current owner for a specific NFT serial",
+      "pricing": "standard",
+      "price": 0.005,
+      "parameters": [
+        { "name": "tokenId", "in": "path", "required": true, "type": "string", "pattern": "^0\\.0\\.\\d+$" },
+        { "name": "serial", "in": "path", "required": true, "type": "string" }
+      ]
+    },
+    {
+      "path": "/api/v1/transactions/history/{accountId}",
+      "method": "GET",
+      "name": "Transaction History",
+      "description": "Returns recent transactions for a Hedera account",
+      "pricing": "basic",
+      "price": 0.001,
+      "parameters": [
+        { "name": "accountId", "in": "path", "required": true, "type": "string", "pattern": "^0\\.0\\.\\d+$" },
+        { "name": "limit", "in": "query", "required": false, "type": "integer", "default": 100, "minimum": 1, "maximum": 500 }
+      ]
+    },
+    {
+      "path": "/api/v1/token/price/{tokenId}",
+      "method": "GET",
+      "name": "Token Price USD",
+      "description": "Returns estimated USD price and 24h volume for a Hedera token",
+      "pricing": "basic",
+      "price": 0.001,
+      "parameters": [
+        { "name": "tokenId", "in": "path", "required": true, "type": "string", "pattern": "^0\\.0\\.\\d+$", "example": "0.0.429274" }
+      ]
+    },
+    {
+      "path": "/api/v1/defi/positions/{accountId}",
+      "method": "GET",
+      "name": "DeFi Positions & Yields",
+      "description": "Returns DeFi positions (LP tokens, staking) for a Hedera account",
+      "pricing": "premium",
+      "price": 0.02,
+      "parameters": [
+        { "name": "accountId", "in": "path", "required": true, "type": "string", "pattern": "^0\\.0\\.\\d+$" }
+      ]
+    }
+  ],
+  "contact": {
+    "name": "mobicobe-bit",
+    "email": "mobicobe@gmail.com",
+    "url": "https://github.com/mobicobe-bit/hedera-x402-micropayments"
+  },
+  "links": {
+    "github": "https://github.com/mobicobe-bit/hedera-x402-micropayments",
+    "liveApi": "https://hedera-micropayments-api.mobicobe.workers.dev",
+    "dashboard": "https://hedera-revenue-dashboard.mobicobe.workers.dev/dashboard",
+    "discovery": "https://hedera-micropayments-api.mobicobe.workers.dev/.well-known/x402.json"
+  },
+  "network": {
+    "name": "Hedera Testnet",
+    "mirrorNode": "https://testnet.mirrornode.hedera.com",
+    "facilitator": "https://x402.org/facilitator",
+    "facilitatorAccount": "0.0.1187135",
+    "payToAddress": "0.0.1073622",
+    "paymentAsset": "0.0.429274"
+  }
+}

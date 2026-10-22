@@ -2,10 +2,17 @@
 
 **Hedera x402 Micropayments API + MicroLottery Protocol Fees**
 
+![Testnet](https://img.shields.io/badge/Testnet-Live-10b981)
+![Mainnet](https://img.shields.io/badge/Mainnet-Ready%20to%20Deploy-f59e0b)
+![x402](https://img.shields.io/badge/x402-Protocol-3b82f6)
+![Hedera](https://img.shields.io/badge/Hedera-Network-8b5cf6)
+![License](https://img.shields.io/badge/License-MIT-6366f1)
+
 A complete system for automated Web3 monetization:
 - **x402 API** — 7 priced endpoints ($0.001–$0.02/call) accepting USDC on Hedera
 - **MicroLottery** — Hedera PRNG-based lottery with product prizes, 2.5% protocol fee
 - **Revenue Dashboard** — Real-time tracking of x402 earnings + lottery fees
+- **Weekly Cron** — Automated lottery rounds via Cloudflare Workers
 
 ---
 
@@ -28,7 +35,8 @@ crypto-micropayments-starter/
 │   ├── worker-entry.ts          # Cloudflare Worker entry (API)
 │   ├── dashboard-worker.ts      # Cloudflare Worker (Dashboard + KV)
 │   ├── dashboard.ts             # Dashboard UI (Tailwind + Chart.js)
-│   └── hedera.ts                # Hedera client helpers
+│   ├── hedera.ts                # Hedera client helpers
+│   └── lottery-cron.ts          # Weekly lottery cron (Cloudflare)
 ├── lottery-contract/
 │   ├── contracts/MicroLottery.sol    # Solidity contract (Hedera PRNG 0x16F)
 │   ├── scripts/deploy.js             # Deploy to testnet/mainnet
@@ -42,7 +50,34 @@ crypto-micropayments-starter/
 │   └── SMART_CONTRACT_AUDIT.md  # Audit checklist
 ├── wrangler.toml                # API worker config
 ├── wrangler-dashboard.toml      # Dashboard worker config (KV)
+├── wrangler-lottery-cron.toml   # Weekly lottery cron config
 └── package.json
+```
+
+---
+
+## 📈 Traffic & Growth (Automated)
+
+### Directory Submissions (One-Time)
+| Directory | Status | Traffic |
+|-----------|--------|---------|
+| [x402.org](https://x402.org/submit) | *Needs custom domain* | AI agents (auto-pay) |
+| [RapidAPI](https://rapidapi.com/provider) | ✅ Published | Developers |
+| [HashPack dApps](https://hashpack.app/dapps/submit) | ✅ Submitted | Wallet users |
+| [APILayer](https://apilayer.com/marketplace/submit) | Pending | Enterprise |
+
+### Automated Recurring
+- **Weekly Lottery Cron** → New round every Sunday 12:00 UTC
+- **AI Agent Discovery** → x402.org + RapidAPI = automatic agent traffic
+- **SEO** → GitHub README + live demo URLs
+
+### Manual Amplification (Optional)
+```bash
+# Tweet template
+"🎰 First x402-native API on Hedera: 7 endpoints, $0.001-$0.02/call
+MicroLottery with 2.5% protocol fee, Hedera PRNG 0x16F
+Revenue dashboard: live metrics
+https://hedera-micropayments-api.mobicobe.workers.dev #Hedera #x402 #Web3"
 ```
 
 ---
@@ -105,6 +140,19 @@ wrangler secret put X402_PRICE_BASIC <<< "1000"
 wrangler secret put X402_PRICE_STANDARD <<< "5000"
 wrangler secret put X402_PRICE_PREMIUM <<< "20000"
 wrangler secret put DASHBOARD_URL <<< "https://hedera-revenue-dashboard.mobicobe.workers.dev"
+```
+
+### 6. Deploy Lottery Cron (Weekly Automated Rounds)
+```bash
+# Set secrets
+wrangler secret put ADMIN_PRIVATE_KEY <<< "0x..."      # Your admin wallet private key
+wrangler secret put DISCORD_WEBHOOK_URL <<< "https://..."  # Optional: notifications
+
+# Deploy
+wrangler deploy -c wrangler-lottery-cron.toml
+
+# Test manually
+curl -X POST https://hedera-lottery-cron.mobicobe.workers.dev/trigger
 ```
 
 ---

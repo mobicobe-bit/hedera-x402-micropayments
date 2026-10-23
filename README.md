@@ -36,7 +36,11 @@ crypto-micropayments-starter/
 │   ├── dashboard-worker.ts      # Cloudflare Worker (Dashboard + KV)
 │   ├── dashboard.ts             # Dashboard UI (Tailwind + Chart.js)
 │   ├── hedera.ts                # Hedera client helpers
-│   └── lottery-cron.ts          # Weekly lottery cron (Cloudflare)
+│   ├── lottery-cron.ts          # Weekly lottery cron (Cloudflare)
+│   └── agent/                   # Hedera Agent Kit integration
+│       ├── hedera-x402-agent.ts # LangChain agent for x402 + Lottery
+│       ├── mcp-server.ts        # MCP server (13 tools)
+│       └── demo.ts              # Agent demo CLI
 ├── lottery-contract/
 │   ├── contracts/MicroLottery.sol    # Solidity contract (Hedera PRNG 0x16F)
 │   ├── scripts/deploy.js             # Deploy to testnet/mainnet
@@ -53,6 +57,64 @@ crypto-micropayments-starter/
 ├── wrangler-lottery-cron.toml   # Weekly lottery cron config
 └── package.json
 ```
+
+---
+
+## 🤖 Hedera Agent Kit Integration (Week 3 Bounty)
+
+This project includes a **Hedera Agent Kit v4** integration for the [Hedera AI Agent Bounty](https://ai-bounties.hedera.com/) **Week 3: MCP or x402 Agent**.
+
+### Features
+- **Core Dependency**: `@hashgraph/hedera-agent-kit` (v4.1.1) — 44 built-in Hedera tools
+- **LangChain Toolkit**: `@hashgraph/hedera-agent-kit-langchain` (v2.0.1) — `HederaLangchainToolkit`
+- **MCP Server**: `@hashgraph/hedera-agent-kit-mcp` (v1.1.1) — `HederaMCPToolkit`
+- **x402 API Integration**: 7 monetized endpoints ($0.001–$0.02/call)
+- **MicroLottery Contract**: Hedera PRNG (0x16F) for verifiable randomness
+
+### Agent Demo
+```bash
+# Run agent demo (shows all 44 Agent Kit tools + x402 endpoints)
+OPERATOR_ID=0.0.XXXXXX OPERATOR_KEY=302e020100... npm run demo:agent
+```
+
+### MCP Server
+```bash
+# Run MCP server (exposes 13 tools via stdio)
+OPERATOR_ID=0.0.XXXXXX OPERATOR_KEY=302e020100... npm run agent:mcp
+```
+
+**Available MCP Tools:**
+- `x402_discover_endpoints` — Discover all x402 endpoints with pricing
+- `x402_get_token_balances` — Query token balances (requires $0.001 USDC)
+- `x402_get_token_analytics` — Token analytics (requires $0.005 USDC)
+- `x402_screen_compliance` — Compliance screening (requires $0.02 USDC)
+- `lottery_create_round` — Create MicroLottery round
+- `lottery_buy_tickets` — Buy lottery tickets
+- `lottery_draw_winner` — Draw winner using Hedera PRNG (0x16F)
+- `lottery_get_round_info` — Get round information
+- `hedera_get_balance` — Get HBAR/token balances
+- `hedera_transfer_hbar` — Transfer HBAR
+- `hedera_create_token` — Create HTS token
+
+### Bounty Submission Checklist
+- ✅ Public GitHub repo: https://github.com/mobicobe-bit/hedera-x402-micropayments
+- ✅ Hedera Agent Kit as core dependency (`@hashgraph/hedera-agent-kit`)
+- ✅ Live demo: https://hedera-micropayments-api.mobicobe.workers.dev
+- ✅ x402 protocol implementation (7 endpoints)
+- ✅ MicroLottery with Hedera PRNG (0x16F)
+- ✅ MCP server using `@hashgraph/hedera-agent-kit-mcp`
+- ✅ LangChain integration using `@hashgraph/hedera-agent-kit-langchain`
+- ✅ Commit history during campaign period
+- ⏳ Feedback submission to hedera-agent-kit-js repo (required)
+
+### Bounty Requirements Met
+| Requirement | Status |
+|-------------|--------|
+| Use Hedera Agent Kit (JS/Python) | ✅ `@hashgraph/hedera-agent-kit` v4.1.1 |
+| Public GitHub repo | ✅ https://github.com/mobicobe-bit/hedera-x402-micropayments |
+| Live hosted demo | ✅ Cloudflare Workers testnet |
+| Feedback on Agent Kit repo | ⏳ Required before submission |
+| Week 3: MCP or x402 Agent | ✅ Both MCP and x402 implemented |
 
 ---
 

@@ -20,8 +20,12 @@ A complete system for automated Web3 monetization:
 
 | Environment | API | Dashboard | Network |
 |-------------|-----|-----------|---------|
-| **Testnet** | [hedera-micropayments-api.mobicobe.workers.dev](https://hedera-micropayments-api.mobicobe.workers.dev) | [hedera-revenue-dashboard.mobicobe.workers.dev/dashboard](https://hedera-revenue-dashboard.mobicobe.workers.dev/dashboard) | Hedera Testnet |
+| **Testnet** | [api.mobicobe.com](https://api.mobicobe.com) | [dashboard.mobicobe.com](https://dashboard.mobicobe.com) | Hedera Testnet |
 | **Mainnet** | *Ready to deploy* | *Ready to deploy* | Hedera Mainnet |
+
+**Workers.dev aliases (also work):**
+- API: `https://hedera-micropayments-api.mobicobe.workers.dev`
+- Dashboard: `https://hedera-revenue-dashboard.mobicobe.workers.dev/dashboard`
 
 ---
 
